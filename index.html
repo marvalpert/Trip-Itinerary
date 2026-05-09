@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T.R.I.P. Concierge - Travel Planning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Playfair Display', 'Georgia', serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #1f1f1f;
+            border-radius: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+            border: 2px solid #d7b221;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-bottom: 3px solid #d7b221;
+            color: #d7b221;
+            padding: 30px 30px;
+            text-align: center;
+        }
+
+        .header img {
+            width: 160px;
+            height: auto;
+            margin: 0 auto;
+            filter: drop-shadow(0 5px 15px rgba(215, 178, 33, 0.4));
+            display: block;
+        }
+
+        .header h1 {
+            display: none;
+        }
+
+        .content {
+            padding: 40px;
+            background: #1f1f1f;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #d7b221;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #d7b221;
+            border-radius: 0;
+            font-size: 1em;
+            background: #2a2a2a;
+            color: #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #777;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #ffed4e;
+            box-shadow: 0 0 10px rgba(215, 178, 33, 0.3);
+            background: #333;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d7b221 0%, #b8860b 100%);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 0;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(215, 178, 33, 0.4);
+            background: linear-gradient(135deg, #ffed4e 0%, #d7b221 100%);
+        }
+
+        .btn-secondary {
+            background: #3a3a3a;
+            color: #d7b221;
+            border: 2px solid #d7b221;
+        }
+
+        .btn-secondary:hover {
+            background: #d7b221;
+            color: #1a1a1a;
+        }
+
+        .destination-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 15px;
+            margin: 20px 0 30px 0;
+        }
+
+        .dest-card {
+            padding: 20px;
+            border: 2px solid #d7b221;
+            text-align: center;
+            cursor: pointer;
+            background: #2a2a2a;
+            transition: all 0.3s;
+        }
+
+        .dest-card:hover {
+            border-color: #ffed4e;
+            background: #333;
+        }
+
+        .dest-card.selected {
+            border-color: #ffed4e;
+            background: linear-gradient(135deg, #d7b221, #b8860b);
+            color: #1a1a1a;
+        }
+
+        .dest-emoji {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+        }
+
+        .dest-name {
+            font-weight: 700;
+            color: #d7b221;
+            font-size: 0.95em;
+        }
+
+        .dest-card.selected .dest-name {
+            color: #1a1a1a;
+        }
+
+        .question-box {
+            background: #2a2a2a;
+            padding: 20px;
+            border-left: 4px solid #d7b221;
+            margin: 20px 0;
+            border-radius: 0;
+        }
+
+        .question-box h3 {
+            color: #d7b221;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .radio-option input {
+            width: auto;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .itinerary-item {
+            background: #2a2a2a;
+            padding: 20px;
+            border-left: 4px solid #d7b221;
+            margin: 15px 0;
+            border-radius: 0;
+        }
+
+        .itinerary-item h4 {
+            color: #d7b221;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 1.1em;
+        }
+
+        .itinerary-item p {
+            color: #d0d0d0;
+            margin: 6px 0;
+            line-height: 1.5;
+            font-size: 0.95em;
+        }
+
+        .itinerary-item strong {
+            color: #ffed4e;
+        }
+
+        .success-box {
+            background: #2d5016;
+            color: #a8d5a8;
+            padding: 15px;
+            border-left: 4px solid #d7b221;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #d7b221;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        h2 span {
+            color: #ffed4e;
+        }
+
+        .welcome-msg {
+            text-align: center;
+            margin: 30px 0;
+            color: #d7b221;
+        }
+
+        .welcome-msg h2 {
+            font-size: 2.2em;
+            margin: 15px 0;
+        }
+
+        .welcome-msg p {
+            color: #b8860b;
+            font-size: 1.05em;
+        }
+
+        .trip-item {
+            background: #2a2a2a;
+            padding: 15px;
+            border-left: 4px solid #d7b221;
+            margin: 12px 0;
+        }
+
+        .trip-item h4 {
+            color: #d7b221;
+            margin-bottom: 8px;
+        }
+
+        .trip-item p {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 500px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .destination-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .content {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <svg viewBox="0 0 400 140" width="300" height="105" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer decorative circle -->
+                <circle cx="70" cy="70" r="55" fill="none" stroke="#d7b221" stroke-width="2"/>
+                <circle cx="70" cy="70" r="50" fill="none" stroke="#d7b221" stroke-width="1" opacity="0.3"/>
+                
+                <!-- Inner decorative circle -->
+                <circle cx="70" cy="70" r="42" fill="none" stroke="#d7b221" stroke-width="1.5" opacity="0.6"/>
+                
+                <!-- Compass rose - North -->
+                <polygon points="70,18 75,28 70,25 65,28" fill="#d7b221"/>
+                <line x1="70" y1="20" x2="70" y2="15" stroke="#d7b221" stroke-width="2"/>
+                
+                <!-- Compass rose - East -->
+                <polygon points="122,70 112,75 115,70 112,65" fill="#d7b221"/>
+                
+                <!-- Compass rose - South -->
+                <polygon points="70,122 65,112 70,115 75,112" fill="#d7b221"/>
+                
+                <!-- Compass rose - West -->
+                <polygon points="18,70 28,65 25,70 28,75" fill="#d7b221"/>
+                
+                <!-- Center circle -->
+                <circle cx="70" cy="70" r="6" fill="#d7b221"/>
+                
+                <!-- Airplane icon in center -->
+                <g transform="translate(70, 70)">
+                    <ellipse cx="0" cy="0" rx="3" ry="10" fill="#1a1a1a" stroke="#d7b221" stroke-width="1.5"/>
+                    <circle cx="0" cy="-2" r="1.5" fill="#d7b221" opacity="0.7"/>
+                    <rect x="-12" y="-2" width="24" height="4" fill="#1a1a1a" stroke="#d7b221" stroke-width="1.5"/>
+                    <polygon points="0,10 -3,16 3,16" fill="#d7b221"/>
+                </g>
+                
+                <!-- Main Text -->
+                <text x="155" y="45" font-family="'Playfair Display', serif" font-size="48" font-weight="700" 
+                      fill="#d7b221" letter-spacing="6">T.R.I.P</text>
+                
+                <!-- Decorative dot -->
+                <circle cx="395" cy="40" r="2" fill="#d7b221"/>
+                
+                <!-- Subtext -->
+                <text x="155" y="68" font-family="'Playfair Display', serif" font-size="16" font-weight="600"
+                      fill="#b8860b" letter-spacing="3">CONCIERGE</text>
+                
+                <!-- Accent line -->
+                <line x1="155" y1="75" x2="395" y2="75" stroke="#d7b221" stroke-width="1" opacity="0.5"/>
+            </svg>
+        </div>
+
+        <div class="content">
+            <!-- Welcome -->
+            <div id="welcome" class="screen active">
+                <div class="welcome-msg">
+                    <h2>Welcome</h2>
+                    <p>Your Personal Travel Planning Experience</p> 
+                </div>
+                <button onclick="switchScreen('login')">Login</button>
+                <button class="btn-secondary" onclick="switchScreen('signup')">Sign Up</button>
+            </div>
+
+            <!-- Signup -->
+            <div id="signup" class="screen">
+                <h2>Create Account</h2>
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="name" placeholder="Your name">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••">
+                </div>
+                <button onclick="signup()">Create Account</button>
+                <button class="btn-secondary" onclick="switchScreen('welcome')">Back</button>
+            </div>
+
+            <!-- Login -->
+            <div id="login" class="screen">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPass" placeholder="••••••••">
+                </div>
+                <button onclick="login()">Login</button>
+                <button class="btn-secondary" onclick="switchScreen('welcome')">Back</button>
+            </div>
+
+            <!-- Dashboard -->
+            <div id="dashboard" class="screen">
+                <h2>Welcome, <span id="user">Guest</span></h2>
+                <button onclick="switchScreen('destinations')">Plan a Trip</button>
+                <button class="btn-secondary" onclick="showTrips()">My Trips</button>
+                <button class="btn-secondary" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Destinations -->
+            <div id="destinations" class="screen">
+                <h2>Where to Go?</h2>
+                <div class="destination-grid">
+                    <div class="dest-card" onclick="selectDest('Paris', this)">
+                        <div class="dest-emoji">🇫🇷</div>
+                        <div class="dest-name">Paris</div>
+                    </div>
+                    <div class="dest-card" onclick="selectDest('Rome', this)">
+                        <div class="dest-emoji">🇮🇹</div>
+                        <div class="dest-name">Rome</div>
+                    </div>
+                    <div class="dest-card" onclick="selectDest('Tokyo', this)">
+                        <div class="dest-emoji">🇯🇵</div>
+                        <div class="dest-name">Tokyo</div>
+                    </div>
+                    <div class="dest-card" onclick="selectDest('New York', this)">
+                        <div class="dest-emoji">🗽</div>
+                        <div class="dest-name">NYC</div>
+                    </div>
+                    <div class="dest-card" onclick="selectDest('Bali', this)">
+                        <div class="dest-emoji">🇮🇩</div>
+                        <div class="dest-name">Bali</div>
+                    </div>
+                    <div class="dest-card" onclick="selectDest('Barcelona', this)">
+                        <div class="dest-emoji">🇪🇸</div>
+                        <div class="dest-name">Barcelona</div>
+                    </div>
+                </div>
+                <button onclick="toQuestions()" id="nextBtn" disabled>Continue</button>
+                <button class="btn-secondary" onclick="switchScreen('dashboard')">Back</button>
+            </div>
+
+            <!-- Questions -->
+            <div id="questions" class="screen">
+                <h2>Trip to <span id="destName">Paris</span></h2>
+                
+                <div class="question-box">
+                    <h3>How many days?</h3>
+                    <input type="number" id="days" min="1" max="30" value="3">
+                </div>
+
+                <div class="question-box">
+                    <h3>Travel Style</h3>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="adventure" checked>
+                            <label>Adventure & Exploration</label>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="culture">
+                            <label>Culture & History</label>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="food">
+                            <label>Food & Dining</label>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="style" value="relax">
+                            <label>Relaxation</label>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-box">
+                    <h3>Budget Level</h3>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="budget" value="moderate" checked>
+                            <label>Moderate</label>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="budget" value="comfortable">
+                            <label>Comfortable</label>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="budget" value="luxury">
+                            <label>Luxury</label>
+                        </label>
+                    </div>
+                </div>
+
+                <button onclick="generateItinerary()">Generate Itinerary</button>
+                <button class="btn-secondary" onclick="switchScreen('destinations')">Back</button>
+            </div>
+
+            <!-- Itinerary -->
+            <div id="itinerary" class="screen">
+                <h2><span id="tripDest">Paris</span> Itinerary</h2>
+                <div id="itineraryContent"></div>
+                <button onclick="saveTrip()">Save Trip</button>
+                <button class="btn-secondary" onclick="switchScreen('dashboard')">Dashboard</button>
+            </div>
+
+            <!-- My Trips -->
+            <div id="mytrips" class="screen">
+                <h2>Saved Trips</h2>
+                <div id="tripsList"></div>
+                <button class="btn-secondary" onclick="switchScreen('dashboard')">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let user = null;
+        let selectedDest = null;
+        let trips = JSON.parse(localStorage.getItem('trips') || '[]');
+
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function signup() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            if (name && email && pass) {
+                user = name;
+                document.getElementById('user').textContent = name;
+                localStorage.setItem('user', name);
+                switchScreen('dashboard');
+            }
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            if (email && pass) {
+                user = 'Traveler';
+                document.getElementById('user').textContent = 'Traveler';
+                switchScreen('dashboard');
+            }
+        }
+
+        function logout() {
+            user = null;
+            switchScreen('welcome');
+        }
+
+        function selectDest(dest, el) {
+            document.querySelectorAll('.dest-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedDest = dest;
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function toQuestions() {
+            document.getElementById('destName').textContent = selectedDest;
+            document.getElementById('tripDest').textContent = selectedDest;
+            switchScreen('questions');
+        }
+
+        function generateItinerary() {
+            const days = document.getElementById('days').value;
+            const style = document.querySelector('input[name="style"]:checked').value;
+            let html = '<div class="success-box">✓ Your Personalized Itinerary</div>';
+            
+            for (let i = 1; i <= Math.min(days, 7); i++) {
+                html += `
+                    <div class="itinerary-item">
+                        <h4>Day ${i}</h4>
+                        <p><strong>Morning:</strong> Explore local attractions & breakfast</p> 
+                        <p><strong>Afternoon:</strong> Visit museums & dining experience</p> 
+                        <p><strong>Evening:</strong> Dinner & evening entertainment</p> 
+                    </div>
+                `;
+            }
+            document.getElementById('itineraryContent').innerHTML = html;
+            switchScreen('itinerary');
+        }
+
+        function saveTrip() {
+            trips.push({
+                id: Date.now(),
+                dest: selectedDest,
+                days: document.getElementById('days').value,
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('trips', JSON.stringify(trips));
+            alert('✓ Trip saved');
+            switchScreen('dashboard');
+        }
+
+        function showTrips() {
+            let html = trips.length ? trips.map(t => `
+                <div class="trip-item">
+                    <h4>📍 ${t.dest}</h4>
+                    <p>${t.days} days • ${t.date}</p> 
+                    <button class="btn-secondary" style="width: 100%; margin-top: 8px;" onclick="deleteTrip(${t.id})">Delete</button>
+                </div>
+            `).join('') : '<p style="text-align: center; color: #888; margin: 30px 0;">No saved trips</p> ';
+            document.getElementById('tripsList').innerHTML = html;
+            switchScreen('mytrips');
+        }
+
+        function deleteTrip(id) {
+            trips = trips.filter(t => t.id !== id);
+            localStorage.setItem('trips', JSON.stringify(trips));
+            showTrips();
+        }
+    </script>
+</body>
+</html>
