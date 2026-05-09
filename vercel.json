@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "buildCommand": null,
+  "buildCommand": "echo \"Static HTML\"",
   "outputDirectory": ".",
-  "installCommand": ""
+  "installCommand": "echo \"No install\""
 }
