@@ -1,9 +1,0 @@
-{
-  "name": "trip-itinerary",
-  "version": "1.0.0",
-  "description": "Personalized travel itinerary generator",
-  "scripts": {
-    "start": "npx http-server",
-    "build": "echo 'Static HTML project'"
-  }
-}
