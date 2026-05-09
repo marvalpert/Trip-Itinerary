@@ -405,7 +405,26 @@
                     <input type="password" id="loginPass" placeholder="••••••••">
                 </div>
                 <button onclick="login()">Login</button>
+                <button class="btn-secondary" onclick="switchScreen('forgot')">Forgot Password?</button>
                 <button class="btn-secondary" onclick="switchScreen('welcome')">Back</button>
+            </div>
+
+            <!-- Forgot Password -->
+            <div id="forgot" class="screen">
+                <h2>Reset Password</h2>
+                <p style="color: #b8860b; margin-bottom: 20px; line-height: 1.5;">
+                    This demo app stores your account only in this browser. Enter the email you used to create the account, then choose a new password.
+                </p>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="resetEmail" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="resetPassword" placeholder="New password">
+                </div>
+                <button onclick="resetPassword()">Reset Password</button>
+                <button class="btn-secondary" onclick="switchScreen('login')">Back to Login</button>
             </div>
 
             <!-- Dashboard -->
@@ -520,9 +539,10 @@
     </div>
 
     <script>
-        let user = null;
+        let user = localStorage.getItem('user') || null;
         let selectedDest = null;
         let trips = JSON.parse(localStorage.getItem('trips') || '[]');
+        let account = JSON.parse(localStorage.getItem('tripAccount') || 'null');
 
         function switchScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -530,29 +550,84 @@
         }
 
         function signup() {
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const pass = document.getElementById('password').value;
-            if (name && email && pass) {
-                user = name;
-                document.getElementById('user').textContent = name;
-                localStorage.setItem('user', name);
-                switchScreen('dashboard');
+
+            if (!name || !email || !pass) {
+                alert('Please enter your name, email, and password.');
+                return;
             }
+
+            if (pass.length < 4) {
+                alert('Please use at least 4 characters for the password.');
+                return;
+            }
+
+            account = { name, email, password: pass };
+            localStorage.setItem('tripAccount', JSON.stringify(account));
+            localStorage.setItem('user', name);
+
+            user = name;
+            document.getElementById('user').textContent = name;
+            switchScreen('dashboard');
         }
 
         function login() {
-            const email = document.getElementById('loginEmail').value;
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
             const pass = document.getElementById('loginPass').value;
-            if (email && pass) {
-                user = 'Traveler';
-                document.getElementById('user').textContent = 'Traveler';
-                switchScreen('dashboard');
+            account = JSON.parse(localStorage.getItem('tripAccount') || 'null');
+
+            if (!email || !pass) {
+                alert('Please enter your email and password.');
+                return;
             }
+
+            if (!account) {
+                alert('No account was found in this browser. Please create an account first.');
+                switchScreen('signup');
+                return;
+            }
+
+            if (email === account.email && pass === account.password) {
+                user = account.name;
+                localStorage.setItem('user', account.name);
+                document.getElementById('user').textContent = account.name;
+                switchScreen('dashboard');
+            } else {
+                alert('Email or password is incorrect. Use Forgot Password to reset it.');
+            }
+        }
+
+        function resetPassword() {
+            const email = document.getElementById('resetEmail').value.trim().toLowerCase();
+            const newPass = document.getElementById('resetPassword').value;
+            account = JSON.parse(localStorage.getItem('tripAccount') || 'null');
+
+            if (!email || !newPass) {
+                alert('Please enter your email and a new password.');
+                return;
+            }
+
+            if (!account || email !== account.email) {
+                alert('No account with that email was found in this browser.');
+                return;
+            }
+
+            if (newPass.length < 4) {
+                alert('Please use at least 4 characters for the new password.');
+                return;
+            }
+
+            account.password = newPass;
+            localStorage.setItem('tripAccount', JSON.stringify(account));
+            alert('Password reset. You can now log in.');
+            switchScreen('login');
         }
 
         function logout() {
             user = null;
+            localStorage.removeItem('user');
             switchScreen('welcome');
         }
 
@@ -616,6 +691,11 @@
             trips = trips.filter(t => t.id !== id);
             localStorage.setItem('trips', JSON.stringify(trips));
             showTrips();
+        }
+
+        // Restore user name if this browser already has a saved login.
+        if (user) {
+            document.getElementById('user').textContent = user;
         }
     </script>
 </body>
